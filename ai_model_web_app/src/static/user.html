@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SafeBite</title>
+  <meta name="description" content="Real-time air quality alerts, simple dashboards, and incentives for Uganda's informal food spaces." />
+
+  <style>
+    :root {
+      /* Light mode colors */
+      --bg-light: #f8fafc;
+      --panel-light: #ffffff;
+      --muted-light: #64748b;
+      --text-light: #1e293b;
+      --accent-light: #22c55e;
+      --accent-2-light: #f59e0b;
+      --danger-light: #ef4444;
+      --ok-light: #10b981;
+      --link-light: #0ea5e9;
+      --border-light: #e2e8f0;
+      
+      /* Dark mode colors */
+      --bg-dark: #0f172a;
+      --panel-dark: #111827;
+      --muted-dark: #6b7280;
+      --text-dark: #e5e7eb;
+      --accent-dark: #22c55e;
+      --accent-2-dark: #f59e0b;
+      --danger-dark: #ef4444;
+      --ok-dark: #10b981;
+      --link-dark: #38bdf8;
+      --border-dark: #1f2937;
+      
+      /* Default to dark mode */
+      --bg: var(--bg-dark);
+      --panel: var(--panel-dark);
+      --muted: var(--muted-dark);
+      --text: var(--text-dark);
+      --accent: var(--accent-dark);
+      --accent-2: var(--accent-2-dark);
+      --danger: var(--danger-dark);
+      --ok: var(--ok-dark);
+      --link: var(--link-dark);
+      --border: var(--border-dark);
+    }
+
+    /* Light mode */
+    [data-theme="light"] {
+      --bg: var(--bg-light);
+      --panel: var(--panel-light);
+      --muted: var(--muted-light);
+      --text: var(--text-light);
+      --accent: var(--accent-light);
+      --accent-2: var(--accent-2-light);
+      --danger: var(--danger-light);
+      --ok: var(--ok-light);
+      --link: var(--link-light);
+      --border: var(--border-light);
+    }
+
+    * {
+      box-sizing: border-box;
+      transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, "Helvetica Neue", Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    a {
+      color: var(--link);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .wrap {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 0 16px;
+    }
+
+    /* Header */
+    header {
+      position: sticky;
+      top: 0;
+      backdrop-filter: saturate(120%) blur(6px);
+      background: rgba(17, 24, 39, 0.8);
+      border-bottom: 1px solid var(--border);
+      z-index: 50;
+    }
+
+    [data-theme="light"] header {
+      background: rgba(255, 255, 255, 0.8);
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      letter-spacing: .2px;
+    }
+
+    .brand .logo {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: conic-gradient(from 210deg, #22c55e, #f59e0b, #38bdf8, #22c55e);
+      box-shadow: 0 0 0 2px var(--border) inset, 0 10px 30px rgba(34, 197, 94, 0.25);
+    }
+
+    .nav a.btn {
+      padding: 8px 14px;
+      border-radius: 8px;
+      background: var(--accent);
+      color: #062e12;
+      font-weight: 700;
+      border: 1px solid #16a34a;
+    }
+
+    .nav .links {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .nav .links a {
+      color: var(--text);
+    }
+
+    .nav .links a:hover {
+      color: var(--accent);
+    }
+
+    /* Theme toggle */
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.2rem;
+      color: var(--text);
+      padding: 5px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .theme-toggle:hover {
+      background: rgba(128, 128, 128, 0.1);
+    }
+
+    /* Hero */
+    .hero {
+      padding: 40px 0 26px;
+    }
+
+    .hero .grid {
+      display: grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 28px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      font-size: clamp(28px, 3.2vw, 40px);
+      margin: 0 0 8px;
+    }
+
+    p.lead {
+      color: var(--muted);
+      margin: 0 0 16px;
+      line-height: 1.5;
+    }
+
+    .cta-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+
+    .btn {
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-weight: 700;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--text);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn.primary {
+      background: var(--accent);
+      color: #062e12;
+      border-color: #16a34a;
+    }
+
+    .btn.secondary {
+      background: var(--panel);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: var(--panel);
+      border: 1px dashed var(--border);
+    }
+
+    /* Panels */
+    h2 {
+      font-size: 22px;
+      margin: 0 0 10px;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .kpi {
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+    }
+
+    .kpi .value {
+      font-size: 26px;
+      font-weight: 800;
+      margin: 8px 0 4px;
+    }
+
+    .kpi .label {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .alerts {
+      display: grid;
+      gap: 10px;
+    }
+
+    .alert {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+    }
+
+    .alert .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 4px;
+    }
+
+    .alert.danger .dot {
+      background: var(--danger);
+    }
+
+    .alert.warn .dot {
+      background: var(--accent-2);
+    }
+
+    .alert.ok .dot {
+      background: var(--ok);
+    }
+
+    .score-ring {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      background: conic-gradient(var(--accent) calc(var(--p, 70) * 1%), var(--border) 0);
+      border: 10px solid var(--panel);
+      box-shadow: 0 10px 30px rgba(34, 197, 94, 0.25) inset;
+      position: relative;
+      margin: 20px auto;
+    }
+
+    .score-ring span {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      font-weight: 900;
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+    }
+
+    .table th, .table td {
+      border-bottom: 1px solid var(--border);
+      padding: 12px 8px;
+      text-align: left;
+    }
+
+    .table th {
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .tag {
+      display: inline-flex;
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+
+    /* Footer */
+    footer {
+      padding: 26px 0;
+      border-top: 1px solid var(--border);
+      margin-top: 24px;
+      color: var(--muted);
+    }
+
+    /* Responsive */
+    @media (max-width: 860px) {
+      .hero .grid {
+        grid-template-columns: 1fr;
+      }
+      .kpis {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .kpis {
+        grid-template-columns: 1fr;
+      }
+      .nav .links {
+        display: none;
+      }
+      .hero .grid {
+        gap: 18px;
+      }
+      .card {
+        padding: 18px;
+      }
+    }
+
+    /* Details styling */
+    details {
+      margin-bottom: 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    details summary {
+      padding: 12px 16px;
+      cursor: pointer;
+      font-weight: 600;
+      background: var(--panel);
+    }
+
+    details p {
+      padding: 0 16px 16px;
+      margin: 0;
+      color: var(--muted);
+    }
+
+    /* Form styling */
+    input {
+      flex: 1;
+      min-width: 220px;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--text);
+    }
+
+    /* Status indicators */
+    .status-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .status-indicator::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--ok);
+    }
+
+    .status-warning::before {
+      background: var(--accent-2);
+    }
+
+    .status-danger::before {
+      background: var(--danger);
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="wrap nav">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>EatSafe</div>
+      </div>
+      <div class="links">
+        <a href="#dashboard">Dashboard</a>
+        <a href="#alerts">Alerts</a>
+        <a href="#rewards">Rewards</a>
+        <a href="#faq">FAQ</a>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+          <span id="themeIcon">🌙</span>
+        </button>
+        <a class="btn" href="#get-started">Get started</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="wrap">
+      <div class="grid">
+        <div class="card">
+          <h1>Air quality alerts for your food business</h1>
+          <p class="lead">Keep customers safe and grow your reputation with real‑time monitoring, simple actions, and rewards for clean air.</p>
+
+          <div class="cta-row">
+            <a class="btn primary" href="#get-started">
+              <span>📱</span> Install sensor (15 min)
+            </a>
+            <a class="btn secondary" href="#dashboard">
+              <span>📊</span> View dashboard
+            </a>
+            <span class="badge">
+              <span>📶</span> Works with Wi‑Fi • 4G • SMS/USSD
+            </span>
+          </div>
+        </div>
+
+        <div class="card" id="score">
+          <h2>Your EatSafe score</h2>
+          <p class="muted">Composite rating based on particulates, combustion gases, and crowding (CO₂).</p>
+          <div class="score-ring" style="--p:72">
+            <span id="scoreValue">72</span>
+          </div>
+          <p style="text-align:center; margin-top:8px">
+            Status: <span class="tag" id="scoreTag">Good</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Dashboard -->
+  <section id="dashboard" class="wrap">
+    <div class="grid" style="grid-template-columns:1fr 1fr; gap:18px">
+      <div class="card">
+        <h2>Live KPIs</h2>
+        <p class="muted">Rolling median readings, auto-smoothed for cooking spikes.</p>
+        <div class="kpis">
+          <div class="kpi">
+            <div class="label">PM₂.₅ (µg/m³)</div>
+            <div class="value" id="pm25">38</div>
+            <div class="status-indicator status-warning">Moderate</div>
+          </div>
+          <div class="kpi">
+            <div class="label">CO (ppm)</div>
+            <div class="value" id="co">7</div>
+            <div class="status-indicator">Good</div>
+          </div>
+          <div class="kpi">
+            <div class="label">CO₂ (ppm)</div>
+            <div class="value" id="co2">910</div>
+            <div class="status-indicator">Good</div>
+          </div>
+        </div>
+
+        <table class="table" aria-label="recent readings">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>PM₂.₅</th>
+              <th>CO</th>
+              <th>NO₂</th>
+              <th>CO₂</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="readings">
+            <!-- Filled by JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card" id="alerts">
+        <h2>Actionable alerts</h2>
+        <p class="muted">Context-aware prompts to reduce exposure right now.</p>
+        <div class="alerts" id="alertList">
+          <!-- Alerts injected by JS -->
+        </div>
+        <div class="cta-row" style="margin-top:12px">
+          <button class="btn" id="ackAll">
+            <span>✅</span> Acknowledge all
+          </button>
+          <button class="btn" id="simulateSpike">
+            <span>🔥</span> Simulate cooking spike
+          </button>
+          <button class="btn" id="improveVent">
+            <span>💨</span> Simulate opening windows
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Rewards -->
+  <section id="rewards" class="wrap" style="margin-top:18px">
+    <div class="card">
+      <h2>Badges and incentives</h2>
+      <p class="muted">Maintain high scores to earn visibility boosts, badges, and micro‑grants or LPG transition subsidies.</p>
+      <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:8px">
+        <span class="tag">Clean Air Bronze</span>
+        <span class="tag">Clean Air Silver</span>
+        <span class="tag">Clean Air Gold</span>
+        <span class="tag">Community Favorite</span>
+      </div>
+      <table class="table" style="margin-top:12px">
+        <thead><tr><th>Badge</th><th>Requirement</th><th>Benefit</th></tr></thead>
+        <tbody>
+          <tr><td>Bronze</td><td>Score ≥ 70 for 2 weeks</td><td>App badge + listing boost</td></tr>
+          <tr><td>Silver</td><td>Score ≥ 80 for 1 month</td><td>Priority placement + promo</td></tr>
+          <tr><td>Gold</td><td>Score ≥ 90 for 1 month</td><td>Micro‑grant eligibility</td></tr>
+          <tr><td>Community Favorite</td><td>High score + positive reviews</td><td>Featured banner</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" class="wrap" style="margin-top:18px">
+    <div class="card">
+      <h2>FAQ</h2>
+      <details>
+        <summary>How does installation work?</summary>
+        <p>We mount a small, low‑power sensor at breathing‑zone height. It takes ~15 minutes and runs on wall power or USB.</p>
+      </details>
+      <details>
+        <summary>What if my internet is weak?</summary>
+        <p>The device buffers data offline and forwards when connectivity returns. It supports Wi‑Fi, 4G, and SMS/USSD for basic alerts.</p>
+      </details>
+      <details>
+        <summary>What is the EatSafe score?</summary>
+        <p>A composite of PM peaks, combustion gas load (CO/NO₂/VOCs), and crowding intensity inferred from CO₂, smoothed to ignore short spikes.</p>
+      </details>
+      <details>
+        <summary>Do customers see my rating?</summary>
+        <p>Yes. High scores get badges and visibility boosts on the public app, helping customers choose safer dining times and venues.</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- Get started -->
+  <section id="get-started" class="wrap" style="margin-top:18px">
+    <div class="card">
+      <h2>Get started</h2>
+      <p class="muted">Enter your phone number to receive SMS/USSD alerts and onboarding instructions.</p>
+      <form id="signup" aria-label="signup form" style="display:flex; gap:10px; flex-wrap:wrap">
+        <input type="tel" id="phone" name="phone" inputmode="tel" placeholder="+256 7XX XXX XXX" required />
+        <button class="btn primary" type="submit">
+          <span>📨</span> Send SMS
+        </button>
+        <button class="btn" type="button" id="requestUSSD">
+          <span>📞</span> Request USSD menu
+        </button>
+      </form>
+      <p id="signupMsg" class="muted" style="margin-top:8px"></p>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">
+      © 2025 EatSafe • Kawempe, Central Region, Uganda • Built for resource‑constrained environments
+    </div>
+  </footer>
+
+  <!-- Demo JS: simulates readings, alerts, and score updates -->
+  <script>
+    // Theme toggle functionality
+    const themeToggle = document.getElementById('themeToggle');
+    const themeIcon = document.getElementById('themeIcon');
+    const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
+    
+    // Set initial theme based on system preference
+    let currentTheme = prefersDarkScheme.matches ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    updateThemeIcon();
+    
+    // Toggle theme when button is clicked
+    themeToggle.addEventListener('click', () => {
+      currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', currentTheme);
+      updateThemeIcon();
+    });
+    
+    function updateThemeIcon() {
+      themeIcon.textContent = currentTheme === 'light' ? '🌙' : '☀️';
+    }
+
+    // Utility: formatted time
+    function nowTime(){
+      const d = new Date();
+      return d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+    }
+
+    // Populate readings table with demo rows
+    const readingsTbody = document.getElementById('readings');
+    const pmEl = document.getElementById('pm25');
+    const coEl = document.getElementById('co');
+    const co2El = document.getElementById('co2');
+    const scoreRing = document.querySelector('.score-ring');
+    const scoreValue = document.getElementById('scoreValue');
+    const scoreTag = document.getElementById('scoreTag');
+    const alertList = document.getElementById('alertList');
+
+    // Rolling state
+    let pm = 38, co = 7, no2 = 13, co2 = 910, score = 72;
+
+    function pushRow(){
+      const tr = document.createElement('tr');
+      const status = (pm > 75 || co > 15 || co2 > 1200) ? 'Warning' : 'OK';
+      tr.innerHTML = `
+        <td>${nowTime()}</td>
+        <td>${pm}</td>
+        <td>${co}</td>
+        <td>${no2}</td>
+        <td>${co2}</td>
+        <td>${status}</td>
+      `;
+      readingsTbody.prepend(tr);
+      // Limit rows
+      while (readingsTbody.rows.length > 8) readingsTbody.deleteRow(-1);
+    }
+
+    function renderKPIs(){
+      pmEl.textContent = pm;
+      coEl.textContent = co;
+      co2El.textContent = co2;
+      scoreValue.textContent = score;
+      scoreRing.style.setProperty('--p', score);
+      scoreTag.textContent = score >= 85 ? 'Excellent' : score >= 70 ? 'Good' : score >= 55 ? 'Fair' : 'Poor';
+      scoreTag.className = 'tag';
+    }
+
+    function addAlert(level, text){
+      const div = document.createElement('div');
+      div.className = `alert ${level}`;
+      div.innerHTML = `
+        <div class="dot"></div>
+        <div>
+          <strong>${level === 'danger' ? 'Critical' : level === 'warn' ? 'Alert' : 'Info'}:</strong>
+          <span style="margin-left:6px">${text}</span>
+          <div class="muted" style="margin-top:6px">Detected at ${nowTime()}</div>
+        </div>
+      `;
+      alertList.prepend(div);
+      while (alertList.children.length > 5) alertList.removeChild(alertList.lastChild);
+    }
+
+    // Initial content
+    for(let i=0;i<5;i++){ pushRow(); }
+    addAlert('ok', 'Ventilation OK. Keep windows slightly open to sustain airflow.');
+    renderKPIs();
+
+    // Simulate stable updates
+    setInterval(()=>{
+      // gentle noise
+      pm = Math.max(8, Math.round(pm + (Math.random()*6 - 3)));
+      co = Math.max(1, Math.round(co + (Math.random()*4 - 2)));
+      no2 = Math.max(5, Math.round(no2 + (Math.random()*4 - 2)));
+      co2 = Math.max(500, Math.round(co2 + (Math.random()*50 - 25)));
+
+      // simple composite score (demo only)
+      const pmComp = Math.max(0, 100 - pm);
+      const gasComp = Math.max(0, 100 - (co*5 + no2*2)/2);
+      const crowdComp = Math.max(0, 100 - (co2 - 400)/10);
+      score = Math.max(15, Math.min(98, Math.round(0.45*pmComp + 0.35*gasComp + 0.20*crowdComp)));
+
+      pushRow();
+      renderKPIs();
+
+      // Passive alerts
+      if (pm > 75) addAlert('warn', 'High particulates detected. Reduce stove load or cover frying.');
+      if (co > 15) addAlert('warn', 'Combustion gases rising. Check charcoal stove and improve ventilation.');
+      if (co2 > 1200) addAlert('warn', 'Crowding detected. Open windows/door to increase airflow.');
+    }, 6000);
+
+    // Buttons
+    document.getElementById('simulateSpike').addEventListener('click', ()=>{
+      pm = pm + 48; co = co + 10; co2 = co2 + 180;
+      addAlert('danger', 'Cooking spike detected. Open windows now and cover frying.');
+      renderKPIs(); pushRow();
+    });
+
+    document.getElementById('improveVent').addEventListener('click', ()=>{
+      pm = Math.max(10, pm - 35); co = Math.max(1, co - 8); co2 = Math.max(500, co2 - 220);
+      addAlert('ok', 'Ventilation improved. Keep a cross‑breeze for the next 15 minutes.');
+      renderKPIs(); pushRow();
+    });
+
+    document.getElementById('ackAll').addEventListener('click', ()=>{
+      alertList.innerHTML = '';
+      addAlert('ok', 'All alerts acknowledged. Monitoring continues.');
+    });
+
+    // Signup
+    document.getElementById('signup').addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const phone = document.getElementById('phone').value.trim();
+      const msg = document.getElementById('signupMsg');
+      if(!phone){
+        msg.textContent = 'Please enter a valid phone number.';
+        return;
+      }
+      msg.textContent = `Thank you. We'll send SMS onboarding to ${phone} shortly.`;
+    });
+
+    document.getElementById('requestUSSD').addEventListener('click', ()=>{
+      document.getElementById('signupMsg').textContent =
+        'USSD menu requested. Dial *123*45# to view your EatSafe score and tips (demo).';
+    });
+  </script>
+</body>
+</html>

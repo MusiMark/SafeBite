@@ -11,12 +11,12 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 if __name__ == "__main__":
     # Configuration
     host = os.getenv("HOST", "0.0.0.0")
-    port = int(os.getenv("PORT", 8000))
+    port = int(os.getenv("PORT", 8080))
     debug = os.getenv("DEBUG", "True").lower() == "true"
     
     print(f"""
     ╔═══════════════════════════════════════════════════╗
-    ║   Air Quality AI - API Server                     ║
+    ║               SafeBite Server                     ║
     ╠═══════════════════════════════════════════════════╣
     ║   Server: http://{host}:{port}                    ║
     ║   Docs:   http://{host}:{port}/docs               ║
