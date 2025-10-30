@@ -1,0 +1,8 @@
+{
+  "n_samples": 10000,
+  "n_anomalies": 968,
+  "label_counts": {
+    "normal": 9032,
+    "possible_gas_or_chemical_spill": 968
+  }
+}
