@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SafeBite</title>
+  <meta name="description" content="Real-time air quality alerts, simple dashboards, and incentives for Uganda's informal food spaces." />
+
+  <style>
+    :root {
+      /* Light mode colors */
+      --bg-light: #f8fafc;
+      --panel-light: #ffffff;
+      --muted-light: #64748b;
+      --text-light: #1e293b;
+      --accent-light: #22c55e;
+      --accent-2-light: #f59e0b;
+      --danger-light: #ef4444;
+      --ok-light: #10b981;
+      --link-light: #0ea5e9;
+      --border-light: #e2e8f0;
+      
+      /* Dark mode colors */
+      --bg-dark: #0f172a;
+      --panel-dark: #111827;
+      --muted-dark: #6b7280;
+      --text-dark: #e5e7eb;
+      --accent-dark: #22c55e;
+      --accent-2-dark: #f59e0b;
+      --danger-dark: #ef4444;
+      --ok-dark: #10b981;
+      --link-dark: #38bdf8;
+      --border-dark: #1f2937;
+      
+      /* Default to dark mode */
+      --bg: var(--bg-dark);
+      --panel: var(--panel-dark);
+      --muted: var(--muted-dark);
+      --text: var(--text-dark);
+      --accent: var(--accent-dark);
+      --accent-2: var(--accent-2-dark);
+      --danger: var(--danger-dark);
+      --ok: var(--ok-dark);
+      --link: var(--link-dark);
+      --border: var(--border-dark);
+    }
+
+    /* Light mode */
+    [data-theme="light"] {
+      --bg: var(--bg-light);
+      --panel: var(--panel-light);
+      --muted: var(--muted-light);
+      --text: var(--text-light);
+      --accent: var(--accent-light);
+      --accent-2: var(--accent-2-light);
+      --danger: var(--danger-light);
+      --ok: var(--ok-light);
+      --link: var(--link-light);
+      --border: var(--border-light);
+    }
+
+    * {
+      box-sizing: border-box;
+      transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, "Helvetica Neue", Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    a {
+      color: var(--link);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .wrap {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 0 16px;
+    }
+
+    /* Header */
+    header {
+      position: sticky;
+      top: 0;
+      backdrop-filter: saturate(120%) blur(6px);
+      background: rgba(17, 24, 39, 0.8);
+      border-bottom: 1px solid var(--border);
+      z-index: 50;
+    }
+
+    [data-theme="light"] header {
+      background: rgba(255, 255, 255, 0.8);
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      letter-spacing: .2px;
+    }
+
+    .brand .logo {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: conic-gradient(from 210deg, #22c55e, #f59e0b, #38bdf8, #22c55e);
+      box-shadow: 0 0 0 2px var(--border) inset, 0 10px 30px rgba(34, 197, 94, 0.25);
+    }
+
+    .nav a.btn {
+      padding: 8px 14px;
+      border-radius: 8px;
+      background: var(--accent);
+      color: #062e12;
+      font-weight: 700;
+      border: 1px solid #16a34a;
+    }
+
+    .nav .links {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .nav .links a {
+      color: var(--text);
+    }
+
+    .nav .links a:hover {
+      color: var(--accent);
+    }
+
+    /* Theme toggle */
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.2rem;
+      color: var(--text);
+      padding: 5px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .theme-toggle:hover {
+      background: rgba(128, 128, 128, 0.1);
+    }
+
+    /* Hero */
+    .hero {
+      padding: 40px 0 26px;
+    }
+
+    .hero .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 18px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      font-size: clamp(28px, 3.2vw, 40px);
+      margin: 0 0 8px;
+    }
+
+    p.lead {
+      color: var(--muted);
+      margin: 0 0 16px;
+      line-height: 1.5;
+    }
+
+    .cta-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+
+    .btn {
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-weight: 700;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--text);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn.primary {
+      background: var(--accent);
+      color: #062e12;
+      border-color: #16a34a;
+    }
+
+    .btn.secondary {
+      background: var(--panel);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: var(--panel);
+      border: 1px dashed var(--border);
+    }
+
+    /* Panels */
+    h2 {
+      font-size: 22px;
+      margin: 0 0 10px;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .kpi {
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+    }
+
+    .kpi .value {
+      font-size: 26px;
+      font-weight: 800;
+      margin: 8px 0 4px;
+    }
+
+    .kpi .label {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .alerts {
+      display: grid;
+      gap: 10px;
+    }
+
+    .alert {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+    }
+
+    .alert .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 4px;
+    }
+
+    .alert.danger .dot {
+      background: var(--danger);
+    }
+
+    .alert.warn .dot {
+      background: var(--accent-2);
+    }
+
+    .alert.ok .dot {
+      background: var(--ok);
+    }
+
+    .score-ring {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      background: conic-gradient(var(--accent) calc(var(--p, 70) * 1%), var(--border) 0);
+      border: 10px solid var(--panel);
+      box-shadow: 0 10px 30px rgba(34, 197, 94, 0.25) inset;
+      position: relative;
+      margin: 20px auto;
+    }
+
+    .score-ring span {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      font-weight: 900;
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+    }
+
+    .table th, .table td {
+      border-bottom: 1px solid var(--border);
+      padding: 12px 8px;
+      text-align: left;
+    }
+
+    .table th {
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .tag {
+      display: inline-flex;
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+
+    /* Footer */
+    footer {
+      padding: 26px 0;
+      border-top: 1px solid var(--border);
+      margin-top: 24px;
+      color: var(--muted);
+    }
+
+    /* Responsive */
+    @media (max-width: 860px) {
+      .hero .grid {
+        grid-template-columns: 1fr;
+      }
+      .kpis {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .kpis {
+        grid-template-columns: 1fr;
+      }
+      .nav .links {
+        display: none;
+      }
+      .hero .grid {
+        gap: 18px;
+      }
+      .card {
+        padding: 18px;
+      }
+    }
+
+    /* Details styling */
+    details {
+      margin-bottom: 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    details summary {
+      padding: 12px 16px;
+      cursor: pointer;
+      font-weight: 600;
+      background: var(--panel);
+    }
+
+    details p {
+      padding: 0 16px 16px;
+      margin: 0;
+      color: var(--muted);
+    }
+
+    /* Form styling */
+    input {
+      flex: 1;
+      min-width: 220px;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--text);
+    }
+
+    /* Status indicators */
+    .status-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .status-indicator::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--ok);
+    }
+
+    .status-warning::before {
+      background: var(--accent-2);
+    }
+
+    .status-danger::before {
+      background: var(--danger);
+    }
+    
+    /* Container styling */
+    .container-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      margin-bottom: 26px;
+    }
+    
+    .container-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+    
+    .container-card h2 {
+      margin-top: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .alert-actions {
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid var(--border);
+    }
+    
+    .action-btn {
+      display: inline-block;
+      margin-right: 10px;
+      margin-bottom: 10px;
+      padding: 8px 14px;
+      background: var(--accent);
+      color: #062e12;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .action-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .action-btn.secondary {
+      background: var(--panel);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    
+    .future-score {
+      text-align: center;
+      padding: 20px;
+    }
+    
+    .future-score-value {
+      font-size: 48px;
+      font-weight: 800;
+      color: var(--accent);
+      margin: 10px 0;
+    }
+    
+    .future-score-label {
+      color: var(--muted);
+      font-size: 16px;
+    }
+    
+    /* User Account Area */
+    .user-account {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(45deg, var(--accent), var(--accent-2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: white;
+      font-size: 18px;
+    }
+    
+    .user-info {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .user-name {
+      font-weight: 600;
+      font-size: 16px;
+    }
+    
+    .user-role {
+      font-size: 13px;
+      color: var(--muted);
+    }
+    
+    .user-menu {
+      position: relative;
+    }
+    
+    .user-menu-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.2rem;
+      color: var(--text);
+      padding: 5px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+    }
+    
+    .user-menu-toggle:hover {
+      background: rgba(128, 128, 128, 0.1);
+    }
+    
+    .dropdown-menu {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      width: 220px;
+      z-index: 100;
+      display: none;
+      overflow: hidden;
+    }
+    
+    .dropdown-menu.show {
+      display: block;
+    }
+    
+    .menu-item {
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    .menu-item:last-child {
+      border-bottom: none;
+    }
+    
+    .menu-item:hover {
+      background: rgba(128, 128, 128, 0.1);
+    }
+    
+    .menu-item i {
+      width: 20px;
+      text-align: center;
+    }
+    
+    /* Anomaly Detection Styles */
+    #anomalyContainer {
+      display: grid;
+      gap: 10px;
+      min-height: 140px;
+    }
+    
+    #anomalyContainer .alert {
+      font-size: 0.9rem;
+    }
+    
+    #detectAnomalies:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="wrap nav">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>SafeBite</div>
+      </div>
+      <div class="links">
+        <a href="#dashboard">Dashboard</a>
+        <a href="#alerts">Alerts</a>
+        <a href="#rewards">Rewards</a>
+        <a href="#faq">FAQ</a>
+      </div>
+      <div class="user-account">
+        <div class="user-info">
+          <div class="user-name">Kawempe Kitchen</div>
+          <div class="user-role">Food Vendor</div>
+        </div>
+        <div class="user-avatar">KK</div>
+        <div class="user-menu">
+          <button class="user-menu-toggle" id="userMenuToggle" aria-label="User menu">
+            <span>⋮</span>
+          </button>
+          <div class="dropdown-menu" id="dropdownMenu">
+            <div class="menu-item">
+              <i>👤</i> <span>Profile Settings</span>
+            </div>
+            <div class="menu-item">
+              <i>🔔</i> <span>Notification Preferences</span>
+            </div>
+            <div class="menu-item">
+              <i>📊</i> <span>Historical Data</span>
+            </div>
+            <div class="menu-item">
+              <i>💳</i> <span>Payment Methods</span>
+            </div>
+            <div class="menu-item">
+              <i>🔒</i> <span>Security Settings</span>
+            </div>
+            <div class="menu-item">
+              <i>❓</i> <span>Help & Support</span>
+            </div>
+            <div class="menu-item">
+              <i>🚪</i> <span>Sign Out</span>
+            </div>
+          </div>
+        </div>
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+          <span id="themeIcon">🌙</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Top Containers -->
+  <section class="wrap">
+    <div class="container-grid">
+      <!-- Alerts Container -->
+      <div class="container-card">
+        <h2><span style="color:var(--danger)">⚠️</span> Alerts</h2>
+        <div class="alert warn">
+          <div class="dot"></div>
+          <div>
+            <strong>High Particulates</strong>
+            <p style="margin: 8px 0 0;">PM₂.₅ levels are elevated (85 µg/m³). Air quality is approaching unsafe levels.</p>
+            <div class="alert-actions">
+              <h3>Possible Actions:</h3>
+              <button class="action-btn">Open Windows</button>
+              <button class="action-btn secondary">Reduce Cooking Load</button>
+              <button class="action-btn secondary">Use Exhaust Fan</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Your Score Container -->
+      <div class="container-card">
+        <h2><span style="color:var(--ok)">📊</span> Your Score</h2>
+        <div class="score-ring" style="--p:72">
+          <span id="scoreValue">72</span>
+        </div>
+        <p style="text-align:center; margin-top:8px">
+          Status: <span class="tag" id="scoreTag">Good</span>
+        </p>
+      </div>
+      
+      <!-- Future Score Container -->
+      <div class="container-card">
+        <h2><span style="color:var(--accent)">🔮</span> Future Score</h2>
+        <div class="future-score">
+          <div class="future-score-value">68</div>
+          <div class="future-score-label">Predicted in 2 hours</div>
+          <p style="margin-top: 15px; color: var(--muted);">Based on current trends and weather forecast</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Dashboard -->
+  <section id="dashboard" class="wrap">
+    <div class="grid" style="grid-template-columns:1fr 1fr; gap:18px">
+      <div class="card">
+        <h2>Live KPIs</h2>
+        <p class="muted">Rolling median readings, auto-smoothed for cooking spikes.</p>
+        <div class="kpis">
+          <div class="kpi">
+            <div class="label">PM₂.₅ (µg/m³)</div>
+            <div class="value" id="pm25">38</div>
+            <div class="status-indicator status-warning">Moderate</div>
+          </div>
+          <div class="kpi">
+            <div class="label">CO (ppm)</div>
+            <div class="value" id="co">7</div>
+            <div class="status-indicator">Good</div>
+          </div>
+          <div class="kpi">
+            <div class="label">CO₂ (ppm)</div>
+            <div class="value" id="co2">910</div>
+            <div class="status-indicator">Good</div>
+          </div>
+        </div>
+
+        <table class="table" aria-label="recent readings">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>PM₂.₅</th>
+              <th>CO</th>
+              <th>NO₂</th>
+              <th>CO₂</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="readings">
+            <!-- Filled by JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card" id="alerts">
+        <h2>Actionable alerts & Anomalies</h2>
+        <p class="muted">Context-aware prompts and anomaly detection results.</p>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 16px;">
+          <!-- Left Side: Actionable Alerts -->
+          <div>
+            <h3 style="font-size: 18px; margin: 0 0 12px; display: flex; align-items: center; gap: 8px;">
+              <span>⚠️</span> Actionable Alerts
+            </h3>
+            <div class="alerts" id="alertList">
+              <!-- Alerts injected by JS -->
+            </div>
+            <div class="cta-row" style="margin-top:12px">
+              <button class="btn" id="ackAll" style="font-size: 0.85rem; padding: 8px 12px;">
+                <span>✅</span> Acknowledge all
+              </button>
+              <button class="btn" id="simulateSpike" style="font-size: 0.85rem; padding: 8px 12px;">
+                <span>🔥</span> Cooking spike
+              </button>
+              <button class="btn" id="improveVent" style="font-size: 0.85rem; padding: 8px 12px;">
+                <span>💨</span> Open windows
+              </button>
+            </div>
+          </div>
+          
+          <!-- Right Side: Anomaly Detection -->
+          <div>
+            <h3 style="font-size: 18px; margin: 0 0 12px; display: flex; align-items: center; gap: 8px;">
+              <span>🔍</span> Anomaly Detection
+            </h3>
+            <div id="anomalyContainer">
+              <!-- Anomaly results will be displayed here -->
+              <div class="alert ok" id="anomalyPlaceholder">
+                <div class="dot"></div>
+                <div>
+                  <strong>No anomalies detected</strong>
+                  <p style="margin: 8px 0 0;">Click "Detect Anomalies" to analyze current data.</p>
+                </div>
+              </div>
+            </div>
+            <div style="margin-top: 12px;">
+              <button class="btn primary" id="detectAnomalies" style="width: 100%;">
+                <span>🔍</span> Detect Anomalies
+              </button>
+              <p class="muted" id="anomalyStatus" style="margin-top: 8px; font-size: 0.85rem; text-align: center;">
+                Ready to analyze
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Rewards -->
+  <section id="rewards" class="wrap" style="margin-top:18px">
+    <div class="card">
+      <h2>Badges and incentives</h2>
+      <p class="muted">Maintain high scores to earn visibility boosts, badges, and micro‑grants or LPG transition subsidies.</p>
+      <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:8px">
+        <span class="tag">Clean Air Bronze</span>
+        <span class="tag">Clean Air Silver</span>
+        <span class="tag">Clean Air Gold</span>
+        <span class="tag">Community Favorite</span>
+      </div>
+      <table class="table" style="margin-top:12px">
+        <thead><tr><th>Badge</th><th>Requirement</th><th>Benefit</th></tr></thead>
+        <tbody>
+          <tr><td>Bronze</td><td>Score ≥ 70 for 2 weeks</td><td>App badge + listing boost</td></tr>
+          <tr><td>Silver</td><td>Score ≥ 80 for 1 month</td><td>Priority placement + promo</td></tr>
+          <tr><td>Gold</td><td>Score ≥ 90 for 1 month</td><td>Micro‑grant eligibility</td></tr>
+          <tr><td>Community Favorite</td><td>High score + positive reviews</td><td>Featured banner</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" class="wrap" style="margin-top:18px">
+    <div class="card">
+      <h2>FAQ</h2>
+      <details>
+        <summary>How does installation work?</summary>
+        <p>We mount a small, low‑power sensor at breathing‑zone height. It takes ~15 minutes and runs on wall power or USB.</p>
+      </details>
+      <details>
+        <summary>What if my internet is weak?</summary>
+        <p>The device buffers data offline and forwards when connectivity returns. It supports Wi‑Fi, 4G, and SMS/USSD for basic alerts.</p>
+      </details>
+      <details>
+        <summary>What is the SafeBite score?</summary>
+        <p>A composite of PM peaks, combustion gas load (CO/NO₂/VOCs), and crowding intensity inferred from CO₂, smoothed to ignore short spikes.</p>
+      </details>
+      <details>
+        <summary>Do customers see my rating?</summary>
+        <p>Yes. High scores get badges and visibility boosts on the public app, helping customers choose safer dining times and venues.</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- Get started -->
+  <section id="get-started" class="wrap" style="margin-top:18px">
+    <div class="card">
+      <h2>Get started</h2>
+      <p class="muted">Enter your phone number to receive SMS/USSD alerts and onboarding instructions.</p>
+      <form id="signup" aria-label="signup form" style="display:flex; gap:10px; flex-wrap:wrap">
+        <input type="tel" id="phone" name="phone" inputmode="tel" placeholder="+256 7XX XXX XXX" required />
+        <button class="btn primary" type="submit">
+          <span>📨</span> Send SMS
+        </button>
+        <button class="btn" type="button" id="requestUSSD">
+          <span>📞</span> Request USSD menu
+        </button>
+      </form>
+      <p id="signupMsg" class="muted" style="margin-top:8px"></p>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">
+      © 2025 SafeBite • Kawempe, Central Region, Uganda • Built for resource‑constrained environments
+    </div>
+  </footer>
+
+  <!-- Real-time API JS: fetches scores, alerts, and dataset from sample CSV files -->
+  <script>
+    // Theme toggle functionality
+    const themeToggle = document.getElementById('themeToggle');
+    const themeIcon = document.getElementById('themeIcon');
+    const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
+    
+    // Set initial theme based on localStorage or system preference
+    let currentTheme = localStorage.getItem('theme') || (prefersDarkScheme.matches ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    updateThemeIcon();
+    
+    // Toggle theme when button is clicked
+    themeToggle.addEventListener('click', () => {
+      currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', currentTheme);
+      localStorage.setItem('theme', currentTheme);
+      updateThemeIcon();
+    });
+    
+    function updateThemeIcon() {
+      themeIcon.textContent = currentTheme === 'light' ? '🌙' : '☀️';
+    }
+
+    // User menu functionality
+    const userMenuToggle = document.getElementById('userMenuToggle');
+    const dropdownMenu = document.getElementById('dropdownMenu');
+    
+    userMenuToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      dropdownMenu.classList.toggle('show');
+    });
+    
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!dropdownMenu.contains(e.target) && e.target !== userMenuToggle) {
+        dropdownMenu.classList.remove('show');
+      }
+    });
+
+    // Utility: formatted time
+    function nowTime(){
+      const d = new Date();
+      return d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+    }
+
+    // DOM Elements
+    const readingsTbody = document.getElementById('readings');
+    const pmEl = document.getElementById('pm25');
+    const coEl = document.getElementById('co');
+    const co2El = document.getElementById('co2');
+    const scoreRing = document.querySelector('.score-ring');
+    const scoreValue = document.getElementById('scoreValue');
+    const scoreTag = document.getElementById('scoreTag');
+    const alertList = document.getElementById('alertList');
+
+    // Global state from API
+    let currentLocationData = null;
+    let pm = 0, co = 0, no2 = 0, co2 = 0, score = 0;
+    let futureScore = 0;
+
+    // Function to fetch data from a specific location
+    async function fetchLocationData(lat, lon) {
+      try {
+        const response = await fetch(`/api/location/${lat}/${lon}`);
+        const result = await response.json();
+        
+        if (result.status === 'success' && result.data) {
+          currentLocationData = result.data;
+          updateUIWithAPIData(result.data);
+          console.log('Location data loaded:', result.data);
+        } else {
+          console.error('Failed to load location data:', result.message);
+          addAlert('warn', 'Unable to load location data. Using demo values.');
+        }
+      } catch (error) {
+        console.error('Error fetching location data:', error);
+        addAlert('danger', 'Network error. Please check your connection.');
+      }
+    }
+
+    // Function to load all locations and pick the first one
+    async function loadInitialLocation() {
+      try {
+        const response = await fetch('/api/locations');
+        const result = await response.json();
+        
+        if (result.status === 'success' && result.locations.length > 0) {
+          // Use the first location from the cache
+          const firstLocation = result.locations[0];
+          currentLocationData = firstLocation;
+          updateUIWithAPIData(firstLocation);
+          console.log(`Loaded location: ${firstLocation.latitude}, ${firstLocation.longitude}`);
+          addAlert('ok', `Monitoring ${firstLocation.latitude}, ${firstLocation.longitude}. Data auto-refreshes every 5 minutes.`);
+        } else if (result.status === 'processing') {
+          // Data is still being processed
+          addAlert('warn', 'Location data is being processed. Will retry in 10 seconds...');
+          setTimeout(loadInitialLocation, 10000); // Retry after 10 seconds
+        } else {
+          console.error('No locations available');
+          addAlert('warn', 'No location data available. Please wait for processing.');
+        }
+      } catch (error) {
+        console.error('Error loading locations:', error);
+        addAlert('danger', 'Failed to connect to API. Please ensure the server is running.');
+      }
+    }
+
+    // Update UI with real API data
+    function updateUIWithAPIData(data) {
+      // API now always returns scores in 0-100 range
+      score = Math.round(data.eat_score_now);
+      futureScore = Math.round(data.eat_score_future);
+      
+      // Ensure scores are within valid range
+      score = Math.max(0, Math.min(100, score));
+      futureScore = Math.max(0, Math.min(100, futureScore));
+      
+      // Extract PM2.5 from external data
+      pm = Math.round(data.external_pm25);
+      
+      // Generate simulated indoor readings based on risk level
+      // (In real scenario, these would come from the CSV dataset)
+      if (data.risk_level_now === 'CRITICAL') {
+        co = Math.round(20 + Math.random() * 10);
+        co2 = Math.round(1500 + Math.random() * 300);
+        no2 = Math.round(25 + Math.random() * 10);
+      } else if (data.risk_level_now === 'HIGH') {
+        co = Math.round(15 + Math.random() * 5);
+        co2 = Math.round(1200 + Math.random() * 200);
+        no2 = Math.round(18 + Math.random() * 7);
+      } else if (data.risk_level_now === 'MODERATE') {
+        co = Math.round(10 + Math.random() * 5);
+        co2 = Math.round(900 + Math.random() * 200);
+        no2 = Math.round(12 + Math.random() * 6);
+      } else {
+        co = Math.round(5 + Math.random() * 3);
+        co2 = Math.round(600 + Math.random() * 200);
+        no2 = Math.round(8 + Math.random() * 4);
+      }
+      
+      // Update displays
+      renderKPIs();
+      pushRow();
+      
+      // Generate alerts based on API data
+      generateAlertsFromAPIData(data);
+      
+      // Update future score display
+      const futureScoreValue = document.querySelector('.future-score-value');
+      if (futureScoreValue) {
+        futureScoreValue.textContent = futureScore;
+      }
+    }
+
+    // Generate intelligent alerts from API data
+    function generateAlertsFromAPIData(data) {
+      // Clear existing alerts
+      alertList.innerHTML = '';
+      
+      // Risk-based alerts
+      if (data.risk_level_now === 'CRITICAL') {
+        addAlert('danger', `CRITICAL: ${data.recommendation}`);
+        addAlert('danger', `Anomaly detected: ${data.current_anomaly.replace('_', ' ').toUpperCase()}`);
+      } else if (data.risk_level_now === 'HIGH') {
+        addAlert('warn', `HIGH RISK: ${data.recommendation}`);
+        if (data.current_anomaly !== 'normal') {
+          addAlert('warn', `Anomaly: ${data.current_anomaly.replace('_', ' ')}`);
+        }
+      } else if (data.risk_level_now === 'MODERATE') {
+        addAlert('warn', `MODERATE: Air quality is acceptable but monitor conditions.`);
+      } else {
+        addAlert('ok', `SAFE: Air quality is good. Current score: ${score}/100`);
+      }
+      
+      // PM2.5 specific alerts
+      if (data.external_pm25 > 75) {
+        addAlert('warn', `High outdoor PM2.5 (${Math.round(data.external_pm25)} µg/m³). Keep windows closed.`);
+      } else if (data.external_pm25 > 35) {
+        addAlert('ok', `Moderate outdoor PM2.5 (${Math.round(data.external_pm25)} µg/m³). Ventilate cautiously.`);
+      }
+      
+      // Future forecast alert
+      const scoreDelta = futureScore - score;
+      if (scoreDelta < -10) {
+        addAlert('warn', `Forecast: Conditions expected to worsen in 30 minutes (Score: ${futureScore})`);
+      } else if (scoreDelta > 10) {
+        addAlert('ok', `Forecast: Conditions expected to improve in 30 minutes (Score: ${futureScore})`);
+      } else {
+        addAlert('ok', `Forecast: Conditions expected to remain stable (Score: ${futureScore})`);
+      }
+      
+      // Confidence alert
+      if (data.current_confidence < 0.7) {
+        addAlert('ok', `Note: Prediction confidence is ${Math.round(data.current_confidence * 100)}%`);
+      }
+      
+      // Update anomaly display automatically
+      updateAnomalyDisplay(data);
+    }
+
+    // Update anomaly detection display
+    function updateAnomalyDisplay(data) {
+      const anomalyContainer = document.getElementById('anomalyContainer');
+      anomalyContainer.innerHTML = '';
+      
+      // Current anomaly
+      const currentAnomalyDiv = document.createElement('div');
+      const currentIsNormal = data.current_anomaly === 'normal';
+      currentAnomalyDiv.className = `alert ${currentIsNormal ? 'ok' : 'warn'}`;
+      currentAnomalyDiv.innerHTML = `
+        <div class="dot"></div>
+        <div>
+          <strong>Current: ${data.current_anomaly.replace('_', ' ').toUpperCase()}</strong>
+          <p style="margin: 8px 0 0;">
+            Confidence: ${Math.round(data.current_confidence * 100)}%
+          </p>
+        </div>
+      `;
+      anomalyContainer.appendChild(currentAnomalyDiv);
+      
+      // Future anomaly
+      const futureAnomalyDiv = document.createElement('div');
+      const futureIsNormal = data.future_anomaly === 'normal';
+      futureAnomalyDiv.className = `alert ${futureIsNormal ? 'ok' : 'warn'}`;
+      futureAnomalyDiv.innerHTML = `
+        <div class="dot"></div>
+        <div>
+          <strong>Forecast: ${data.future_anomaly.replace('_', ' ').toUpperCase()}</strong>
+          <p style="margin: 8px 0 0;">
+            Confidence: ${Math.round(data.future_confidence * 100)}% (30 min)
+          </p>
+        </div>
+      `;
+      anomalyContainer.appendChild(futureAnomalyDiv);
+      
+      // Update status
+      const anomalyStatus = document.getElementById('anomalyStatus');
+      if (anomalyStatus) {
+        const timestamp = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+        anomalyStatus.textContent = `Last updated: ${timestamp}`;
+      }
+    }
+
+    // Detect anomalies button handler
+    async function detectAnomalies() {
+      if (!currentLocationData) {
+        addAlert('warn', 'No location data loaded. Please wait...');
+        return;
+      }
+      
+      const detectBtn = document.getElementById('detectAnomalies');
+      const anomalyStatus = document.getElementById('anomalyStatus');
+      const anomalyContainer = document.getElementById('anomalyContainer');
+      
+      // Show loading state
+      detectBtn.disabled = true;
+      detectBtn.innerHTML = '<span>⏳</span> Analyzing...';
+      anomalyStatus.textContent = 'Running anomaly detection...';
+      
+      try {
+        // Fetch fresh data from the API (which runs anomaly detection)
+        const response = await fetch(`/api/location/${currentLocationData.latitude}/${currentLocationData.longitude}`);
+        const result = await response.json();
+        
+        if (result.status === 'success' && result.data) {
+          // Update UI with new data
+          updateUIWithAPIData(result.data);
+          
+          // Show success message
+          addAlert('ok', 'Anomaly detection completed successfully.');
+          anomalyStatus.textContent = `Analysis complete - ${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`;
+        } else {
+          throw new Error(result.message || 'Failed to detect anomalies');
+        }
+      } catch (error) {
+        console.error('Error detecting anomalies:', error);
+        addAlert('danger', 'Failed to detect anomalies. Please try again.');
+        anomalyStatus.textContent = 'Error - Click to retry';
+        
+        // Show error in anomaly container
+        anomalyContainer.innerHTML = `
+          <div class="alert danger">
+            <div class="dot"></div>
+            <div>
+              <strong>Detection Failed</strong>
+              <p style="margin: 8px 0 0;">Unable to analyze data. Please try again.</p>
+            </div>
+          </div>
+        `;
+      } finally {
+        // Reset button state
+        detectBtn.disabled = false;
+        detectBtn.innerHTML = '<span>🔍</span> Detect Anomalies';
+      }
+    }
+
+    // Add event listener for detect anomalies button
+    document.getElementById('detectAnomalies').addEventListener('click', detectAnomalies);
+
+    function pushRow(){
+      const tr = document.createElement('tr');
+      const status = (pm > 75 || co > 15 || co2 > 1200) ? 'Warning' : 'OK';
+      tr.innerHTML = `
+        <td>${nowTime()}</td>
+        <td>${pm}</td>
+        <td>${co}</td>
+        <td>${no2}</td>
+        <td>${co2}</td>
+        <td>${status}</td>
+      `;
+      readingsTbody.prepend(tr);
+      // Limit rows
+      while (readingsTbody.rows.length > 8) readingsTbody.deleteRow(-1);
+    }
+
+    function renderKPIs(){
+      pmEl.textContent = pm;
+      coEl.textContent = co;
+      co2El.textContent = co2;
+      scoreValue.textContent = score;
+      scoreRing.style.setProperty('--p', score);
+      scoreTag.textContent = score >= 85 ? 'Excellent' : score >= 70 ? 'Good' : score >= 55 ? 'Fair' : 'Poor';
+      scoreTag.className = 'tag';
+    }
+
+    function addAlert(level, text){
+      const div = document.createElement('div');
+      div.className = `alert ${level}`;
+      div.innerHTML = `
+        <div class="dot"></div>
+        <div>
+          <strong>${level === 'danger' ? 'Critical' : level === 'warn' ? 'Alert' : 'Info'}:</strong>
+          <span style="margin-left:6px">${text}</span>
+          <div class="muted" style="margin-top:6px">Detected at ${nowTime()}</div>
+        </div>
+      `;
+      alertList.prepend(div);
+      while (alertList.children.length > 5) alertList.removeChild(alertList.lastChild);
+    }
+
+    // Load initial data on page load
+    loadInitialLocation();
+
+    // Auto-refresh data every 5 minutes
+    setInterval(() => {
+      if (currentLocationData) {
+        fetchLocationData(currentLocationData.latitude, currentLocationData.longitude);
+      } else {
+        loadInitialLocation();
+      }
+    }, 5 * 60 * 1000);
+
+    // Add gentle variations to readings every 6 seconds for live feel
+    setInterval(() => {
+      if (currentLocationData) {
+        // Add small random variations to make it feel live
+        pm = Math.max(5, Math.round(pm + (Math.random() * 4 - 2)));
+        co = Math.max(1, Math.round(co + (Math.random() * 2 - 1)));
+        no2 = Math.max(5, Math.round(no2 + (Math.random() * 2 - 1)));
+        co2 = Math.max(400, Math.round(co2 + (Math.random() * 30 - 15)));
+        
+        pushRow();
+        renderKPIs();
+      }
+    }, 6000);
+
+    // Buttons for simulating environmental changes
+    document.getElementById('simulateSpike').addEventListener('click', ()=>{
+      pm = pm + 48; co = co + 10; co2 = co2 + 180;
+      score = Math.max(15, score - 20); // Reduce score
+      addAlert('danger', 'Cooking spike detected. Open windows now and cover frying.');
+      renderKPIs(); pushRow();
+    });
+
+    document.getElementById('improveVent').addEventListener('click', ()=>{
+      pm = Math.max(10, pm - 35); co = Math.max(1, co - 8); co2 = Math.max(500, co2 - 220);
+      score = Math.min(98, score + 15); // Improve score
+      addAlert('ok', 'Ventilation improved. Keep a cross‑breeze for the next 15 minutes.');
+      renderKPIs(); pushRow();
+    });
+
+    document.getElementById('ackAll').addEventListener('click', ()=>{
+      alertList.innerHTML = '';
+      addAlert('ok', 'All alerts acknowledged. Monitoring continues.');
+    });
+
+    // Signup
+    document.getElementById('signup').addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const phone = document.getElementById('phone').value.trim();
+      const msg = document.getElementById('signupMsg');
+      if(!phone){
+        msg.textContent = 'Please enter a valid phone number.';
+        return;
+      }
+      msg.textContent = `Thank you. We'll send SMS onboarding to ${phone} shortly.`;
+    });
+
+    document.getElementById('requestUSSD').addEventListener('click', ()=>{
+      document.getElementById('signupMsg').textContent =
+        'USSD menu requested. Dial *123*45# to view your SafeBite score and tips (demo).';
+    });
+  </script>
+</body>
+</html>
