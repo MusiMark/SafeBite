@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafeBite - Find Clean Dining Venues in Uganda</title>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+        crossorigin=""/>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        :root {
+            /* Light mode colors */
+            --bg-light: #f8fafc;
+            --panel-light: #ffffff;
+            --muted-light: #64748b;
+            --text-light: #1e293b;
+            --accent-light: #22c55e;
+            --accent-2-light: #f59e0b;
+            --danger-light: #ef4444;
+            --ok-light: #10b981;
+            --link-light: #0ea5e9;
+            --border-light: #e2e8f0;
+            
+            /* Dark mode colors */
+            --bg-dark: #0f172a;
+            --panel-dark: #111827;
+            --muted-dark: #6b7280;
+            --text-dark: #e5e7eb;
+            --accent-dark: #22c55e;
+            --accent-2-dark: #f59e0b;
+            --danger-dark: #ef4444;
+            --ok-dark: #10b981;
+            --link-dark: #38bdf8;
+            --border-dark: #1f2937;
+            
+            /* Default to dark mode */
+            --bg: var(--bg-dark);
+            --panel: var(--panel-dark);
+            --muted: var(--muted-dark);
+            --text: var(--text-dark);
+            --accent: var(--accent-dark);
+            --accent-2: var(--accent-2-dark);
+            --danger: var(--danger-dark);
+            --ok: var(--ok-dark);
+            --link: var(--link-dark);
+            --border: var(--border-dark);
+        }
+
+        /* Light mode */
+        [data-theme="light"] {
+            --bg: var(--bg-light);
+            --panel: var(--panel-light);
+            --muted: var(--muted-light);
+            --text: var(--text-light);
+            --accent: var(--accent-light);
+            --accent-2: var(--accent-2-light);
+            --danger: var(--danger-light);
+            --ok: var(--ok-light);
+            --link: var(--link-light);
+            --border: var(--border-light);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+        }
+        
+        html, body {
+            height: 100%;
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, "Helvetica Neue", Arial, sans-serif;
+            color: var(--text);
+            background: var(--bg);
+            overflow-x: hidden;
+        }
+        
+        a {
+            color: var(--link);
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .wrap {
+            max-width: 1040px;
+            margin: 0 auto;
+            padding: 0 16px;
+        }
+
+        /* Header */
+        header {
+            position: sticky;
+            top: 0;
+            backdrop-filter: saturate(120%) blur(6px);
+            background: rgba(17, 24, 39, 0.8);
+            border-bottom: 1px solid var(--border);
+            z-index: 50;
+        }
+
+        [data-theme="light"] header {
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 0;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            letter-spacing: .2px;
+            color: var(--text);
+        }
+
+        .brand .logo {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            background: conic-gradient(from 210deg, #22c55e, #f59e0b, #38bdf8, #22c55e);
+            box-shadow: 0 0 0 2px var(--border) inset, 0 10px 30px rgba(34, 197, 94, 0.25);
+        }
+
+        .nav .links {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .nav .links a {
+            color: var(--text);
+            position: relative;
+            padding: 5px 0;
+        }
+
+        .nav .links a:hover {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 5px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(128, 128, 128, 0.1);
+        }
+        
+        .container {
+            max-width: 1040px;
+            margin: 40px auto;
+            background: var(--panel);
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+        }
+        
+        h1 {
+            color: var(--text);
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            background: linear-gradient(to right, var(--accent), var(--accent-2));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: var(--muted);
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+        
+        .input-group {
+            margin-bottom: 30px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: var(--text);
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+        
+        button {
+            padding: 15px 40px;
+            background: var(--accent);
+            color: #062e12;
+            border: 1px solid #16a34a;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        #results {
+            margin-top: 30px;
+            display: none;
+        }
+        
+        #results.show {
+            display: block;
+        }
+        
+        .result-card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            transition: transform 0.3s;
+        }
+        
+        .result-card:hover {
+            transform: scale(1.02);
+        }
+        
+        .result-title {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 15px;
+        }
+        
+        .score-display {
+            font-size: 3em;
+            font-weight: 800;
+            text-align: center;
+            margin: 20px 0;
+            color: var(--accent);
+        }
+        
+        .anomaly-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+        
+        .anomaly-badge.detected {
+            background-color: var(--danger);
+            color: white;
+        }
+        
+        .anomaly-badge.normal {
+            background-color: var(--ok);
+            color: white;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .loading.show {
+            display: block;
+        }
+        
+        .spinner {
+            border: 4px solid var(--border);
+            border-top: 4px solid var(--accent);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid var(--danger);
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .error.show {
+            display: block;
+        }
+        
+        .info-text {
+            color: var(--muted);
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+        
+        /* Map Styles */
+        #map {
+            height: 400px;
+            width: 100%;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 2px solid var(--border);
+        }
+        
+        .search-container {
+            margin-bottom: 20px;
+        }
+        
+        .search-wrapper {
+            position: relative;
+        }
+        
+        #searchInput {
+            width: 100%;
+            padding: 15px;
+            padding-right: 120px;
+            border: 2px solid var(--border);
+            background: var(--panel);
+            color: var(--text);
+            border-radius: 10px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+        
+        #searchInput:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        
+        #searchBtn {
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 10px 20px;
+            font-size: 0.9em;
+        }
+        
+        .map-info {
+            background-color: rgba(34, 197, 94, 0.1);
+            border: 1px solid var(--accent);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 1em;
+            color: var(--accent);
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .coords-display {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .coords-display .coord-item {
+            display: inline-block;
+            margin: 5px 15px;
+            font-size: 1.1em;
+        }
+        
+        .coords-display .coord-label {
+            font-weight: 600;
+            color: var(--muted);
+        }
+        
+        .coords-display .coord-value {
+            color: var(--accent);
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+        }
+        
+        /* Autocomplete styles */
+        .autocomplete-suggestions {
+            position: absolute;
+            width: calc(100% - 10px);
+            background: var(--panel);
+            border: 2px solid var(--accent);
+            border-top: none;
+            border-radius: 0 0 10px 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            margin-top: -10px;
+        }
+        
+        .autocomplete-suggestion {
+            padding: 12px 15px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .autocomplete-suggestion:last-child {
+            border-bottom: none;
+        }
+        
+        .autocomplete-suggestion:hover,
+        .autocomplete-suggestion.active {
+            background-color: rgba(34, 197, 94, 0.1);
+        }
+        
+        .autocomplete-suggestion i {
+            color: var(--accent);
+            font-size: 1.1rem;
+        }
+        
+        .autocomplete-suggestion .suggestion-text {
+            flex: 1;
+            color: var(--text);
+        }
+        
+        .autocomplete-suggestion strong {
+            color: var(--accent);
+        }
+        
+        .autocomplete-suggestion .suggestion-type {
+            font-size: 0.75rem;
+            color: var(--muted);
+            background: var(--border);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+        
+        /* Quick links */
+        .quick-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .quick-link {
+            background: var(--accent);
+            color: #062e12;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            text-decoration: none;
+            transition: transform 0.2s;
+            font-weight: 600;
+        }
+        
+        .quick-link:hover {
+            transform: translateY(-2px);
+            text-decoration: none;
+        }
+        
+        .quick-link i {
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        footer {
+            background: var(--panel);
+            border-top: 1px solid var(--border);
+            padding: 24px 0;
+            margin-top: 60px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.9em;
+        }
+
+        /* Map legend */
+        .map-legend {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 10px;
+            font-size: 0.85em;
+        }
+
+        .legend-title {
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 4px 0;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        .legend-color.excellent { background: #22c55e; }
+        .legend-color.good { background: #f59e0b; }
+        .legend-color.moderate { background: #ef4444; }
+        .legend-color.poor { background: #991b1b; }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <nav class="nav wrap">
+            <div class="brand">
+                <div class="logo"></div>
+                <span>SafeBite</span>
+            </div>
+            <div class="links">
+                <a href="/dashboard.html">Dashboard</a>
+                <a href="/">Restaurants</a>
+                <a href="/find.html">Find Venues</a>
+                <a href="/customer-app.html">Leaderboard</a>
+                <a href="/analytics.html">Analytics</a>
+                <button class="theme-toggle" id="themeToggle">
+                    <span id="themeIcon">☀️</span>
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container wrap">
+        <h1>🌍 SafeBite Platform</h1>
+        <p class="subtitle">Find Clean Dining Venues in Uganda - Real-time Air Quality Monitoring</p>
+        
+        <!-- Quick access links -->
+        <div class="quick-links">
+            <a href="/customer-app.html" class="quick-link">
+                <i class="fas fa-trophy"></i>
+                <div>View Leaderboard</div>
+            </a>
+            <a href="/dashboard.html" class="quick-link">
+                <i class="fas fa-store"></i>
+                <div>Restaurant Dashboard</div>
+            </a>
+            <a href="/analytics.html" class="quick-link">
+                <i class="fas fa-chart-line"></i>
+                <div>Analytics</div>
+            </a>
+        </div>
+        
+        <!-- Map Search Section -->
+        <div class="search-container">
+            <label>🔍 Search for Clean Dining Venues in Uganda</label>
+            <div class="search-wrapper">
+                <input type="text" id="searchInput" placeholder="Search for a place in Uganda (e.g., Kampala, Entebbe)" autocomplete="off">
+                <button id="searchBtn">Search</button>
+                <div id="autocompleteSuggestions" class="autocomplete-suggestions" style="display: none;"></div>
+            </div>
+            <p class="info-text">Find restaurants with the best air quality • Search or click on the map</p>
+        </div>
+        
+        <!-- Map Container -->
+        <div id="map"></div>
+        
+        <!-- Map Legend -->
+        <div class="map-legend">
+            <div class="legend-title">📊 Score Legend</div>
+            <div class="legend-item">
+                <div class="legend-color excellent"></div>
+                <span>Excellent (80-100) - Safe dining</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color good"></div>
+                <span>Good (60-79) - Acceptable</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color moderate"></div>
+                <span>Moderate (40-59) - Use caution</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color poor"></div>
+                <span>Poor (&lt;40) - Avoid</span>
+            </div>
+        </div>
+        
+        <div class="map-info" id="mapInfo">
+            📍 Loading locations... Please wait
+        </div>
+        
+        <!-- Hidden inputs for coordinates -->
+        <input type="hidden" id="latitude">
+        <input type="hidden" id="longitude">
+        
+        <!-- Analyze Button -->
+        <div style="text-align: center; margin: 20px 0;">
+            <button id="submit" style="padding: 15px 60px; font-size: 1.2em;">Analyze Air Quality</button>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 10px; color: var(--muted);">Analyzing air quality data...</p>
+        </div>
+        
+        <div class="error" id="error"></div>
+        
+        <div id="results">
+            <h2 style="margin-bottom: 20px; color: var(--text);">📊 Analysis Results</h2>
+            
+            <div class="result-card">
+                <div class="result-title">Current Air Quality</div>
+                <div class="score-display" id="eatScoreNow">--</div>
+                <div style="text-align: center;">
+                    <span class="anomaly-badge" id="currentAnomaly">--</span>
+                </div>
+            </div>
+            
+            <div class="result-card">
+                <div class="result-title">30-Minute Forecast</div>
+                <div class="score-display" id="eatScoreFuture">--</div>
+                <div style="text-align: center;">
+                    <span class="anomaly-badge" id="futureAnomaly">--</span>
+                </div>
+            </div>
+
+            <div class="result-card">
+                <div class="result-title">PM 2.5 Levels in the Area</div>
+                <div class="score-display" id="external_pm25">--</div>
+                <div style="text-align: center;">
+                    <span class="anomaly-badge">&mu;g/m<sup>3</sup></span>
+                </div>
+            </div>
+            
+            <div style="margin-top: 20px; padding: 15px; background-color: rgba(34, 197, 94, 0.1); border: 1px solid var(--accent); border-radius: 10px;">
+                <p style="color: var(--muted); font-size: 0.9em;">
+                    <strong>Location:</strong> <span id="coordinates">--</span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="wrap">
+            © 2025 SafeBite • Kawempe, Central Region, Uganda • Built for resource‑constrained environments
+        </div>
+    </footer>
+    
+    <!-- Leaflet JavaScript -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        crossorigin=""></script>
+    <!-- App JavaScript -->
+    <script src="/static/app.js"></script>
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
+        
+        // Check localStorage first, then system preference
+        let currentTheme = localStorage.getItem('theme') || (prefersDarkScheme.matches ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', currentTheme);
+        updateThemeIcon();
+        
+        // Toggle theme when button is clicked
+        themeToggle.addEventListener('click', () => {
+            currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', currentTheme);
+            localStorage.setItem('theme', currentTheme);
+            updateThemeIcon();
+        });
+        
+        function updateThemeIcon() {
+            themeIcon.textContent = currentTheme === 'light' ? '🌙' : '☀️';
+        }
+    </script>
+</body>
+</html>
