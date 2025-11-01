@@ -328,21 +328,20 @@ scheduler = BackgroundScheduler()
 
 def schedule_background_processing():
     """Start background processing job"""
-    # DO NOT process immediately on startup - this blocks port binding
-    # Instead, schedule first run after 2 minutes
-    print("Scheduling background location processing...")
+    # Process immediately on startup
+    print("Starting initial location processing...")
+    process_all_locations()
     
-    # Schedule to run every 5 minutes, starting 2 minutes from now
+    # Schedule to run every 5 minutes
     scheduler.add_job(
         process_all_locations,
         'interval',
         minutes=5,
         id='process_locations',
-        replace_existing=True,
-        next_run_time=datetime.now() + pd.Timedelta(minutes=2)  # First run in 2 min
+        replace_existing=True
     )
     scheduler.start()
-    print("Background scheduler started - first run in 2 minutes, then every 5 minutes")
+    print("Background scheduler started - will update every 5 minutes")
 
 # Shutdown handler
 def shutdown_scheduler():
@@ -359,24 +358,14 @@ model_manager = ModelManager()
 async def startup_event():
     """Initialize models and start background processing on startup"""
     print("🚀 Starting up inference service...")
+    await model_manager.initialize_models()
+    print("✅ Models initialized")
     
-    # CRITICAL: Do NOT initialize models at startup on Render
-    # This causes port binding timeout. Models load on-demand instead.
-    # await model_manager.initialize_models()  # DISABLED for Render deployment
-    
-    print("✅ Inference service ready (models will load on first request)")
-    
-    # Start background processing in a separate thread AFTER a delay
-    # This allows the port to bind first
+    # Start background processing in a separate thread
     import threading
-    def delayed_background_start():
-        import time
-        time.sleep(30)  # Wait 30 seconds after startup
-        schedule_background_processing()
-    
-    thread = threading.Thread(target=delayed_background_start, daemon=True)
+    thread = threading.Thread(target=schedule_background_processing, daemon=True)
     thread.start()
-    print("✅ Background processing will start in 30 seconds")
+    print("✅ Background processing started")
 
 @router.post("/inference", response_model=DetailedInferenceResponse)
 async def perform_inference(coords: Coordinates):

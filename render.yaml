@@ -2,11 +2,8 @@ services:
   - type: web
     name: air-quality-api
     env: python
-    region: oregon
-    plan: free
-    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
-    startCommand: uvicorn src.app:app --host 0.0.0.0 --port $PORT --workers 1
-    healthCheckPath: /health
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn src.app:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHON_VERSION
-        value: 3.11.0
+        value: 3.10.0
